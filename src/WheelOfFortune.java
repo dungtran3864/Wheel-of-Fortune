@@ -1,7 +1,5 @@
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by Zung on 10/5/17.
@@ -72,9 +70,15 @@ public class WheelOfFortune {
      * @return true if yes, false if not
      */
     public boolean checkIfAlreadyGuessed(ArrayList<String> guessedCharacters, String guess) {
-        return guessedCharacters.contains(guess);
+        return guessedCharacters.contains(guess.toLowerCase());
     }
 
+    /**
+     *
+     *
+     * @param answer
+     * @return
+     */
     public String encryptAnswer(String answer) {
         String encrypted = "";
         for (int i=0; i<answer.length(); i++) {
@@ -87,6 +91,14 @@ public class WheelOfFortune {
         return encrypted;
     }
 
+    /**
+     *
+     *
+     * @param encrypted
+     * @param answer
+     * @param correctGuess
+     * @return
+     */
     public String decryptAnswer(String encrypted, String answer, String correctGuess) {
         StringBuilder decrypted = new StringBuilder(encrypted);
         char guessChar = correctGuess.toUpperCase().charAt(0);
@@ -107,7 +119,7 @@ public class WheelOfFortune {
         int numberOfName = 0;
         Scanner nameScan = new Scanner(System.in);
         while (numberOfName < 3) {
-            System.out.println("Enter the name of Player " + (numberOfName + 1) + " :");
+            System.out.print("Enter the name of Player " + (numberOfName + 1) + " : ");
             String playerName = nameScan.nextLine();
             Player player = new Player(playerName);
             this.players.add(player);
@@ -134,7 +146,156 @@ public class WheelOfFortune {
         */
 
         int i = 0;
+        boolean validCommand = true;
+        int prevDollar = 0;
+        int invalidTimes = 0;
 
+        while (true) {
+
+            // Introduce the puzzle, the current player playing, and his current prize
+
+            System.out.println();
+            System.out.println("Puzzle: " + encryptedAnswer);
+            System.out.println();
+            System.out.println("It's " + this.players.get(i).showName() + "'s turn");
+            System.out.println("Your currently have: $" + this.players.get(i).showScore());
+
+            // Spin the Wheel of Fortune
+
+            int dollar = this.wheelOfFortune.get(new Random().nextInt(this.wheelOfFortune.size()));
+            if (validCommand) {
+                System.out.println("WHEEL OF FORTUNE HAS BEEN SPUN!");
+                System.out.println("You have landed on $" + dollar);
+                System.out.println();
+            }
+
+            // Taking in the command, and process it
+
+            Scanner decisionScan = new Scanner(System.in);
+            System.out.print("Would you like to guess a character OR solve the puzzle? Type in either GUESS or SOLVE: ");
+            String decision = decisionScan.nextLine().trim();
+
+            if (decision.toUpperCase().equals("GUESS")) {
+
+                // Check if there are any characters guessed in the game, if yes then show to the contestants
+
+                if (this.guessedCharacters.size() > 0) {
+                    System.out.print("Guessed characters are: ");
+                    for (String guessed : guessedCharacters) {
+                        System.out.print(guessed.toUpperCase() + " ");
+                    }
+                    System.out.println();
+                }
+                System.out.print("Type in a character you want to guess: ");
+                String guess = decisionScan.nextLine().trim();
+                System.out.println();
+
+                // Check if the character guess satisfies the condition
+
+                while (checkIfAlreadyGuessed(this.guessedCharacters, guess) || guess.length() != 1) {
+                    System.out.println("Invalid guess! Please try again!");
+                    System.out.print("Guessed characters are: ");
+                    for (String guessed : this.guessedCharacters) {
+                        System.out.print(guessed.toUpperCase() + " ");
+                    }
+                    System.out.println();
+                    System.out.print("Please type in another your character guess: ");
+                    guess = decisionScan.nextLine().trim();
+                    System.out.println();
+                }
+
+                // Check if the character guess is correct, and process the outcomes
+
+                if (checkCharAnswer(answer, guess)) {
+
+                    int numberOfPosition = listOfCharPos(answer, guess).size();
+                    System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess + "'s in the answer!");
+                    this.guessedCharacters.add(guess.toLowerCase());
+                    if (validCommand) {
+                        this.players.get(i).gainScore(dollar * numberOfPosition);
+                    } else {
+                        this.players.get(i).gainScore(prevDollar * numberOfPosition);
+                    }
+                    System.out.println("You now have: $" + this.players.get(i).showScore());
+                    encryptedAnswer = decryptAnswer(encryptedAnswer, answer, guess);
+
+                } else {
+
+                    System.out.println("Sorry! " + guess + " is not in the answer!");
+                    this.guessedCharacters.add(guess.toLowerCase());
+                    i++;
+                }
+
+                // Reset the validation of command again
+
+                validCommand = true;
+                invalidTimes = 0;
+
+            } else if (decision.toUpperCase().equals("SOLVE")) {
+
+                // Take in the complete guess, and process the outcome
+
+                System.out.print("Please type in your solution to the puzzle: ");
+                String completeGuess = decisionScan.nextLine().trim();
+                if (checkWholeAnswer(answer, completeGuess)) {
+                    this.winner = this.players.get(i);
+                    System.out.println("OH MY GOD!!! You're the GENIUS!!!");
+                    break;
+                } else {
+                    System.out.println("Sorry! Your solution is incorrect!");
+                    i++;
+                }
+
+                // Reset the validation of command again
+
+                validCommand = true;
+                invalidTimes = 0;
+
+            } else {
+
+                // When a command is invalid, keep the spin prize, but re-process the command
+
+                System.out.println("Invalid command! Try again!");
+                validCommand = false;
+                invalidTimes++;
+                if (invalidTimes == 1) {   // If the user keeps typing wrong command more than once, the prize is still retained
+                    prevDollar = dollar;
+                }
+            }
+
+            // See if the answer is revealed yet
+
+            if (!encryptedAnswer.contains("_")) {
+                break;
+            }
+
+            // Go back to the first player if the last player has done his turn
+            if (i >= this.players.size()) {
+                i = 0;
+            }
+
+        }
+
+        // Reveal the answer
+
+        System.out.println();
+        System.out.println("The answer to the Puzzle is: " + answer);
+
+        // Show the winner
+
+        if (this.winner == null) {
+
+            Player winner = this.players.get(0);
+            for (Player player : this.players) {
+                if (player.showScore() > winner.showScore()) {
+                    winner = player;
+                }
+            }
+            System.out.println(winner.showName() + " has won the Wheel of Fortune with $" + winner.showScore());
+
+        } else {
+            System.out.println(this.winner.showName() + " has won the Wheel of Fortune!!!");
+        }
 
     }
 

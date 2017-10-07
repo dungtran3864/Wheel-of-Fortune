@@ -15,6 +15,10 @@ public class Player {
         this.score += point;
     }
 
+    public int showScore() {
+        return this.score;
+    }
+
     public String showName() {
         return this.name;
     }
