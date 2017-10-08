@@ -149,12 +149,12 @@ public class WheelOfFortune {
 
         /*
             Now for the complete game simulation of Wheel of Fortune. The first player will start the game. He will spin
-            the wheel to get some points, or lose points. He will make an either one-character guess, or a complete guess.
+            the wheel to get some points,. He will make an either one-character guess, or a complete guess. He can guess
+            a consonant for no charges, or buy a vowel for $250 and not getting the spun prize for the turn.
             If one-character guess is correct, the encrypted characters will appear in the word, and he will get another turn.
             If one-character guess is wrong, the next turn will be given to the next player. If a complete guess is made
-            and correct, he wins the game. Any turn has similar process. If the player types in an invalid
-            one-character guess, he will get another chance to retype until it's valid. If the player types in an invalid
-            complete guess, he will NOT have a change to retype. The game ends when the last encrypted characters appear
+            and correct, he wins the game. Any turn has similar process. If the player types in an invalid one-character,
+            or complete guess, he will lose his turn. The game ends when the last encrypted characters appear
             to reveal the final answer, or a player makes a correct complete guess. The score of the player playing will
             show before and after he makes a guess and/or spins the wheel. All scores will show when the game ends. A
             list guessed characters will show each turn as well.
