@@ -12,6 +12,7 @@ public class WheelOfFortune {
 
     private final ArrayList<Integer> wheelOfFortune = new ArrayList<>(Arrays.asList(2500, 900, 700, 300, 800, 500, 400,
             600, 350, 900, 650, 700, 800, 500, 450, 300));
+    private final ArrayList<String> vowels = new ArrayList<>(Arrays.asList("u", "o", "a", "i", "e"));
 
     /**
      * Initiate a wheel of fortune game object
@@ -74,10 +75,27 @@ public class WheelOfFortune {
     }
 
     /**
+     * Handle vowel/non-vowel cases. If it's a vowel, check to see if player has sufficient fund to buy that
+     * vowel.
      *
+     * @param vowels list of vowels
+     * @param guess given guess
+     * @param player the player making the guess
+     * @return true if player has sufficient fund to buy a vowel, or it's not a vowel case. False if otherwise.
+     */
+    public boolean checkIfVowelEligible(ArrayList<String> vowels, String guess, Player player) {
+        if (vowels.contains(guess)) {
+            return player.showScore() > 250;
+        } else {
+            return true; // If not a vowel, then no need to worry about
+        }
+    }
+
+    /**
+     * Encrypt the answer to string of "_" characters
      *
-     * @param answer
-     * @return
+     * @param answer answer to be encrypted
+     * @return an encrypted answer string
      */
     public String encryptAnswer(String answer) {
         String encrypted = "";
@@ -92,11 +110,11 @@ public class WheelOfFortune {
     }
 
     /**
+     * Take in a character guess, and change "_" characters that represent that guess character in the answer
      *
-     *
-     * @param encrypted
-     * @param answer
-     * @param correctGuess
+     * @param encrypted current encrypted answer
+     * @param answer original answer to match
+     * @param correctGuess input character guess
      * @return
      */
     public String decryptAnswer(String encrypted, String answer, String correctGuess) {
@@ -183,15 +201,28 @@ public class WheelOfFortune {
                     }
                     System.out.println();
                 }
+
+                // Ask for a character guess
+
+                System.out.println("CONSONANTS will not cost you any money. For VOWELS, " +
+                        "you can buy one of them for $250, given you have sufficient resources.");
                 System.out.print("Type in a character you want to guess: ");
                 String guess = decisionScan.nextLine().trim();
-                System.out.println();
 
-                // Check if the character guess satisfies the condition
+                // Check if the character guess satisfies the condition. Additionally, check to see if
+                // it is a vowel. If it is, then check to see if the player is eligible for buying that vowel.
+                // This process helps delivering the final clean guess to proceed.
 
-                while (guess.length() != 1) {
-                    System.out.print("Invalid guess! Please try again: ");
+                while (guess.length() != 1 || !checkIfVowelEligible(this.vowels, guess, this.players.get(i))) {
+
+                    if (guess.length() != 1) {
+                        System.out.print("Invalid guess! Please try again: ");
+                    } else {   // There are only 2 cases in this loop, so checkIfVowelEligible is the other one
+                        System.out.print("You currently don't have enough money to buy this vowel! Please type in " +
+                                "another character guess: ");
+                    }
                     guess = decisionScan.nextLine().trim();
+
                 }
                 System.out.println();
 
@@ -200,12 +231,17 @@ public class WheelOfFortune {
                 if (checkCharAnswer(answer, guess) && !checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
 
                     int numberOfPosition = listOfCharPos(answer, guess).size();
-                    System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess + "'s in the answer!");
+                    System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess.toUpperCase()
+                            + "'s in the answer!");
                     this.guessedCharacters.add(guess.toLowerCase());
-                    if (validCommand) {
-                        this.players.get(i).gainScore(dollar * numberOfPosition);
+                    if (!this.vowels.contains(guess)) {
+                        if (validCommand) {
+                            this.players.get(i).gainScore(dollar * numberOfPosition);
+                        } else {
+                            this.players.get(i).gainScore(prevDollar * numberOfPosition);
+                        }
                     } else {
-                        this.players.get(i).gainScore(prevDollar * numberOfPosition);
+                        this.players.get(i).loseScore(250);
                     }
                     System.out.println("You now have: $" + this.players.get(i).showScore());
                     encryptedAnswer = decryptAnswer(encryptedAnswer, answer, guess);

@@ -15,6 +15,8 @@ public class Player {
         this.score += point;
     }
 
+    public void loseScore(int point) { this.score -= point; }
+
     public int showScore() {
         return this.score;
     }
