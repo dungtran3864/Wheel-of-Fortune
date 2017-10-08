@@ -11,8 +11,8 @@ public class WheelOfFortune {
     private Player winner;
 
     private final ArrayList<String> wheelOfFortune = new ArrayList<>(Arrays.asList("$2500", "$900", "$700", "$300", "$800",
-            "$500", "$400", "$600", "$350", "$900", "Bankrupt", "$650", "$700", "Lose a Turn", "$800", "$500", "$450", "$300",
-            "Bankrupt"));
+            "$500", "$400", "$600", "$350", "$900", "Bankrupt", "Free Play", "$650", "$700", "Lose a Turn", "$800", "$500",
+            "$450", "$300", "Bankrupt"));
     private final ArrayList<String> vowels = new ArrayList<>(Arrays.asList("u", "o", "a", "i", "e"));
 
     /**
@@ -156,16 +156,20 @@ public class WheelOfFortune {
             If one-character guess is correct, the encrypted characters will appear in the word, and he will get another turn.
             If one-character guess is wrong, the next turn will be given to the next player. If a complete guess is made
             and correct, he wins the game. Any turn has similar process. If the player types in an invalid one-character,
-            or complete guess, he will lose his turn. The game ends when the last encrypted characters appear
-            to reveal the final answer, or a player makes a correct complete guess. The score of the player playing will
-            show before and after he makes a guess and/or spins the wheel. All scores will show when the game ends. A
-            list guessed characters will show each turn as well.
+            or complete guess, he will lose his turn. If he gets Free Play, he can buy a vowel for free, or every correct
+            consonant guess, he gets $500. He will not lose his turn if he ever guesses or solves incorrectly. If he gets
+            a bankrupt, he loses his turn and resets his fund to 0. If he gets Lose a Turn, he just loses his turn.
+            The game ends when the last encrypted characters appear to reveal the final answer, or a player makes a
+            correct complete guess. The score of the player playing will show before and after he makes a guess and/or
+            spins the wheel. All scores will show when the game ends. A list guessed characters will show each turn as well.
         */
 
-        int i = 0;
-        boolean validCommand = true;
-        int prevDollar = 0;
-        int invalidTimes = 0;
+        int i = 0;  // Index of player in the game
+        boolean validCommand = true;  // Process guess/solve command validation
+        int prevDollar = 0;  // Store a temporary variable for prize if a command is invalid, so the player re-plays
+        int invalidTimes = 0;  // Responsible for tracking the invalid times
+        boolean freePlay = false;  // Free Play status
+        int dollar = 0;  // Monetary prize for a spin. Once this goes into the loop, it is guaranteed to change, not 0.
 
         while (true) {
 
@@ -185,14 +189,19 @@ public class WheelOfFortune {
                 System.out.println("WHEEL OF FORTUNE HAS BEEN SPUN!");
                 System.out.println("You have landed on " + prize);
                 System.out.println();
+                if (prize.equals("Free Play")) {  // Prevent Free Play from lost due to invalid commands in process
+                    freePlay = true;
+                }
             }
 
             if (!(prize.equals("Bankrupt") || prize.equals("Lose a Turn"))) {
 
                 // Player lands on a prize. Now take in further command, and process it.
 
-                String processedPrizeString = prize.replace("$", "");
-                int dollar = Integer.parseInt(processedPrizeString);
+                if (!freePlay) {
+                    String processedPrizeString = prize.replace("$", "");
+                    dollar = Integer.parseInt(processedPrizeString);
+                }
 
                 Scanner decisionScan = new Scanner(System.in);
                 System.out.print("Would you like to guess a character OR solve the puzzle? Type in either GUESS or SOLVE: ");
@@ -212,8 +221,14 @@ public class WheelOfFortune {
 
                     // Ask for a character guess
 
-                    System.out.println("CONSONANTS will not cost you any money. For VOWELS, " +
-                            "you can buy one of them for $250, given you have sufficient fund.");
+                    if (!freePlay) {
+                        System.out.println("CONSONANTS will not cost you any money. For VOWELS, " +
+                                "you can buy one of them for $250, given you have sufficient fund.");
+                    } else {
+                        System.out.println("You will not lose your turn if you make an incorrect guess! You" +
+                                "can buy a vowel for FREE, or every correct consonant guess you make grants you" +
+                                "$500");
+                    }
                     System.out.print("Type in a character you want to guess: ");
                     String guess = decisionScan.nextLine().trim();
 
@@ -221,16 +236,25 @@ public class WheelOfFortune {
                     // it is a vowel. If it is, then check to see if the player is eligible for buying that vowel.
                     // This process helps delivering the final clean guess to proceed.
 
-                    while (guess.length() != 1 || !checkIfVowelEligible(this.vowels, guess, this.players.get(i))) {
+                    if (!freePlay) {
+                        while (guess.length() != 1 || !checkIfVowelEligible(this.vowels, guess, this.players.get(i))) {
 
-                        if (guess.length() != 1) {
-                            System.out.print("Invalid guess! Please try again: ");
-                        } else {   // There are only 2 cases in this loop, so checkIfVowelEligible is the other one
-                            System.out.print("You currently don't have enough money to buy this vowel! Please type in " +
-                                    "another character guess: ");
+                            if (guess.length() != 1) {
+                                System.out.print("Invalid guess! Please try again: ");
+                            } else {   // There are only 2 cases in this loop, so checkIfVowelEligible is the other one
+                                System.out.print("You currently don't have enough money to buy this vowel! Please type in " +
+                                        "another character guess: ");
+                            }
+                            guess = decisionScan.nextLine().trim();
+
                         }
-                        guess = decisionScan.nextLine().trim();
+                    } else {
+                        while (guess.length() != 1) {
 
+                            System.out.print("Invalid guess! Please try again: ");
+                            guess = decisionScan.nextLine().trim();
+
+                        }
                     }
                     System.out.println();
 
@@ -242,32 +266,48 @@ public class WheelOfFortune {
                         System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess.toUpperCase()
                                 + "'s in the answer!");
                         this.guessedCharacters.add(guess.toLowerCase());
-                        if (!this.vowels.contains(guess)) {
-                            if (validCommand) {
-                                this.players.get(i).gainScore(dollar * numberOfPosition);
+
+                        if (!freePlay) {
+                            if (!this.vowels.contains(guess)) {
+                                if (validCommand) {
+                                    this.players.get(i).gainScore(dollar * numberOfPosition);
+                                } else {
+                                    this.players.get(i).gainScore(prevDollar * numberOfPosition);
+                                }
                             } else {
-                                this.players.get(i).gainScore(prevDollar * numberOfPosition);
+                                this.players.get(i).loseScore(250);
                             }
                         } else {
-                            this.players.get(i).loseScore(250);
+                            // Free Play is not affected by invalid commands, since it only prize is $500 for correct consonant.
+                            if (!this.vowels.contains(guess)) {
+                                this.players.get(i).gainScore(500 * numberOfPosition);
+                            }
                         }
+
                         System.out.println("You now have: $" + this.players.get(i).showScore());
                         encryptedAnswer = decryptAnswer(encryptedAnswer, answer, guess);
 
                     } else {
 
-                        if (!checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
-                            System.out.println("Sorry! " + guess.toUpperCase() + " is not in the answer!");
-                            this.guessedCharacters.add(guess.toLowerCase());
+                        if (!freePlay) {
+                            if (!checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
+                                System.out.println("Sorry! " + guess.toUpperCase() + " is not in the answer!");
+                                this.guessedCharacters.add(guess.toLowerCase());
+                            } else {
+                                System.out.println("Sorry! " + guess.toUpperCase() + " has already been taken!");
+                            }
+                            i++;
                         } else {
-                            System.out.println("Sorry! " + guess.toUpperCase() + " has already been taken!");
+                            // Keep the turn if the player has Free Play
+                            System.out.println("No worries! You still can keep your turn!");
                         }
-                        i++;
 
                     }
 
-                    // Reset the validation of command again
+                    // Reset the Free Play (if had) after use
+                    freePlay = false;
 
+                    // Reset the validation of command again
                     validCommand = true;
                     invalidTimes = 0;
                     System.out.println();
@@ -283,13 +323,20 @@ public class WheelOfFortune {
                         System.out.println("OH MY GOD!!! You're the GENIUS!!!");
                         break;
                     } else {
-                        System.out.println("Sorry! Your solution is incorrect!");
-                        i++;
+                        if (!freePlay) {
+                            System.out.println("Sorry! Your solution is incorrect!");
+                            i++;
+                        } else {
+                            // Keep the turn if the player has Free Play
+                            System.out.println("No worries! You still can keep your turn!");
+                        }
                     }
                     System.out.println();
 
-                    // Reset the validation of command again
+                    // Reset Free Play (if had) after use
+                    freePlay = false;
 
+                    // Reset the validation of command again
                     validCommand = true;
                     invalidTimes = 0;
 
