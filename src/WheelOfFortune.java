@@ -189,21 +189,15 @@ public class WheelOfFortune {
 
                 // Check if the character guess satisfies the condition
 
-                while (checkIfAlreadyGuessed(this.guessedCharacters, guess) || guess.length() != 1) {
-                    System.out.println("Invalid guess! Please try again!");
-                    System.out.print("Guessed characters are: ");
-                    for (String guessed : this.guessedCharacters) {
-                        System.out.print(guessed.toUpperCase() + " ");
-                    }
-                    System.out.println();
-                    System.out.print("Please type in another your character guess: ");
+                while (guess.length() != 1) {
+                    System.out.print("Invalid guess! Please try again: ");
                     guess = decisionScan.nextLine().trim();
-                    System.out.println();
                 }
+                System.out.println();
 
                 // Check if the character guess is correct, and process the outcomes
 
-                if (checkCharAnswer(answer, guess)) {
+                if (checkCharAnswer(answer, guess) && !checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
 
                     int numberOfPosition = listOfCharPos(answer, guess).size();
                     System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess + "'s in the answer!");
@@ -218,9 +212,14 @@ public class WheelOfFortune {
 
                 } else {
 
-                    System.out.println("Sorry! " + guess + " is not in the answer!");
-                    this.guessedCharacters.add(guess.toLowerCase());
+                    if (!checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
+                        System.out.println("Sorry! " + guess.toUpperCase() + " is not in the answer!");
+                        this.guessedCharacters.add(guess.toLowerCase());
+                    } else {
+                        System.out.println("Sorry! " + guess.toUpperCase() + " has already been taken!");
+                    }
                     i++;
+
                 }
 
                 // Reset the validation of command again
