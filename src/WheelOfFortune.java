@@ -13,7 +13,6 @@ public class WheelOfFortune {
     private final ArrayList<String> wheelOfFortune = new ArrayList<>(Arrays.asList("$2500", "$900", "$700", "$300", "$800",
             "$500", "$400", "$600", "$350", "$900", "Bankrupt", "$650", "$700", "Lose a Turn", "$800", "$500", "$450", "$300",
             "Bankrupt"));
-//    private final ArrayList<String> wheelOfFortune = new ArrayList<>(Arrays.asList("$2500", "Bankrupt"));
     private final ArrayList<String> vowels = new ArrayList<>(Arrays.asList("u", "o", "a", "i", "e"));
 
     /**
@@ -146,6 +145,7 @@ public class WheelOfFortune {
             this.players.add(player);
             numberOfName++;
         }
+        System.out.println();
 
         String encryptedAnswer = encryptAnswer(answer);
 
@@ -175,7 +175,7 @@ public class WheelOfFortune {
                 System.out.println("Puzzle: " + encryptedAnswer);
                 System.out.println();
                 System.out.println("It's " + this.players.get(i).showName() + "'s turn");
-                System.out.println("Your currently have: $" + this.players.get(i).showScore());
+                System.out.println("You currently have: $" + this.players.get(i).showScore());
             }
 
             // Spin the Wheel of Fortune
