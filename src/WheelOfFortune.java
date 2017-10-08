@@ -10,8 +10,10 @@ public class WheelOfFortune {
     private ArrayList<String> guessedCharacters;
     private Player winner;
 
-    private final ArrayList<Integer> wheelOfFortune = new ArrayList<>(Arrays.asList(2500, 900, 700, 300, 800, 500, 400,
-            600, 350, 900, 650, 700, 800, 500, 450, 300));
+    private final ArrayList<String> wheelOfFortune = new ArrayList<>(Arrays.asList("$2500", "$900", "$700", "$300", "$800",
+            "$500", "$400", "$600", "$350", "$900", "Bankrupt", "$650", "$700", "Lose a Turn", "$800", "$500", "$450", "$300",
+            "Bankrupt"));
+//    private final ArrayList<String> wheelOfFortune = new ArrayList<>(Arrays.asList("$2500", "Bankrupt"));
     private final ArrayList<String> vowels = new ArrayList<>(Arrays.asList("u", "o", "a", "i", "e"));
 
     /**
@@ -169,130 +171,155 @@ public class WheelOfFortune {
 
             // Introduce the puzzle, the current player playing, and his current prize
 
-            System.out.println();
-            System.out.println("Puzzle: " + encryptedAnswer);
-            System.out.println();
-            System.out.println("It's " + this.players.get(i).showName() + "'s turn");
-            System.out.println("Your currently have: $" + this.players.get(i).showScore());
+            if (validCommand) {
+                System.out.println("Puzzle: " + encryptedAnswer);
+                System.out.println();
+                System.out.println("It's " + this.players.get(i).showName() + "'s turn");
+                System.out.println("Your currently have: $" + this.players.get(i).showScore());
+            }
 
             // Spin the Wheel of Fortune
 
-            int dollar = this.wheelOfFortune.get(new Random().nextInt(this.wheelOfFortune.size()));
+            String prize = this.wheelOfFortune.get(new Random().nextInt(this.wheelOfFortune.size()));
             if (validCommand) {
                 System.out.println("WHEEL OF FORTUNE HAS BEEN SPUN!");
-                System.out.println("You have landed on $" + dollar);
+                System.out.println("You have landed on " + prize);
                 System.out.println();
             }
 
-            // Taking in the command, and process it
+            if (!(prize.equals("Bankrupt") || prize.equals("Lose a Turn"))) {
 
-            Scanner decisionScan = new Scanner(System.in);
-            System.out.print("Would you like to guess a character OR solve the puzzle? Type in either GUESS or SOLVE: ");
-            String decision = decisionScan.nextLine().trim();
+                // Player lands on a prize. Now take in further command, and process it.
 
-            if (decision.toUpperCase().equals("GUESS")) {
+                String processedPrizeString = prize.replace("$", "");
+                int dollar = Integer.parseInt(processedPrizeString);
 
-                // Check if there are any characters guessed in the game, if yes then show to the contestants
+                Scanner decisionScan = new Scanner(System.in);
+                System.out.print("Would you like to guess a character OR solve the puzzle? Type in either GUESS or SOLVE: ");
+                String decision = decisionScan.nextLine().trim();
 
-                if (this.guessedCharacters.size() > 0) {
-                    System.out.print("Guessed characters are: ");
-                    for (String guessed : guessedCharacters) {
-                        System.out.print(guessed.toUpperCase() + " ");
+                if (decision.toUpperCase().equals("GUESS")) {
+
+                    // Check if there are any characters guessed in the game, if yes then show to the contestants
+
+                    if (this.guessedCharacters.size() > 0) {
+                        System.out.print("Guessed characters are: ");
+                        for (String guessed : guessedCharacters) {
+                            System.out.print(guessed.toUpperCase() + " ");
+                        }
+                        System.out.println();
+                    }
+
+                    // Ask for a character guess
+
+                    System.out.println("CONSONANTS will not cost you any money. For VOWELS, " +
+                            "you can buy one of them for $250, given you have sufficient fund.");
+                    System.out.print("Type in a character you want to guess: ");
+                    String guess = decisionScan.nextLine().trim();
+
+                    // Check if the character guess satisfies the condition. Additionally, check to see if
+                    // it is a vowel. If it is, then check to see if the player is eligible for buying that vowel.
+                    // This process helps delivering the final clean guess to proceed.
+
+                    while (guess.length() != 1 || !checkIfVowelEligible(this.vowels, guess, this.players.get(i))) {
+
+                        if (guess.length() != 1) {
+                            System.out.print("Invalid guess! Please try again: ");
+                        } else {   // There are only 2 cases in this loop, so checkIfVowelEligible is the other one
+                            System.out.print("You currently don't have enough money to buy this vowel! Please type in " +
+                                    "another character guess: ");
+                        }
+                        guess = decisionScan.nextLine().trim();
+
                     }
                     System.out.println();
-                }
 
-                // Ask for a character guess
+                    // Check if the character guess is correct, and process the outcomes
 
-                System.out.println("CONSONANTS will not cost you any money. For VOWELS, " +
-                        "you can buy one of them for $250, given you have sufficient resources.");
-                System.out.print("Type in a character you want to guess: ");
-                String guess = decisionScan.nextLine().trim();
+                    if (checkCharAnswer(answer, guess) && !checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
 
-                // Check if the character guess satisfies the condition. Additionally, check to see if
-                // it is a vowel. If it is, then check to see if the player is eligible for buying that vowel.
-                // This process helps delivering the final clean guess to proceed.
-
-                while (guess.length() != 1 || !checkIfVowelEligible(this.vowels, guess, this.players.get(i))) {
-
-                    if (guess.length() != 1) {
-                        System.out.print("Invalid guess! Please try again: ");
-                    } else {   // There are only 2 cases in this loop, so checkIfVowelEligible is the other one
-                        System.out.print("You currently don't have enough money to buy this vowel! Please type in " +
-                                "another character guess: ");
-                    }
-                    guess = decisionScan.nextLine().trim();
-
-                }
-                System.out.println();
-
-                // Check if the character guess is correct, and process the outcomes
-
-                if (checkCharAnswer(answer, guess) && !checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
-
-                    int numberOfPosition = listOfCharPos(answer, guess).size();
-                    System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess.toUpperCase()
-                            + "'s in the answer!");
-                    this.guessedCharacters.add(guess.toLowerCase());
-                    if (!this.vowels.contains(guess)) {
-                        if (validCommand) {
-                            this.players.get(i).gainScore(dollar * numberOfPosition);
-                        } else {
-                            this.players.get(i).gainScore(prevDollar * numberOfPosition);
-                        }
-                    } else {
-                        this.players.get(i).loseScore(250);
-                    }
-                    System.out.println("You now have: $" + this.players.get(i).showScore());
-                    encryptedAnswer = decryptAnswer(encryptedAnswer, answer, guess);
-
-                } else {
-
-                    if (!checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
-                        System.out.println("Sorry! " + guess.toUpperCase() + " is not in the answer!");
+                        int numberOfPosition = listOfCharPos(answer, guess).size();
+                        System.out.println("Congratulations! There is/are " + numberOfPosition + " " + guess.toUpperCase()
+                                + "'s in the answer!");
                         this.guessedCharacters.add(guess.toLowerCase());
+                        if (!this.vowels.contains(guess)) {
+                            if (validCommand) {
+                                this.players.get(i).gainScore(dollar * numberOfPosition);
+                            } else {
+                                this.players.get(i).gainScore(prevDollar * numberOfPosition);
+                            }
+                        } else {
+                            this.players.get(i).loseScore(250);
+                        }
+                        System.out.println("You now have: $" + this.players.get(i).showScore());
+                        encryptedAnswer = decryptAnswer(encryptedAnswer, answer, guess);
+
                     } else {
-                        System.out.println("Sorry! " + guess.toUpperCase() + " has already been taken!");
+
+                        if (!checkIfAlreadyGuessed(this.guessedCharacters, guess)) {
+                            System.out.println("Sorry! " + guess.toUpperCase() + " is not in the answer!");
+                            this.guessedCharacters.add(guess.toLowerCase());
+                        } else {
+                            System.out.println("Sorry! " + guess.toUpperCase() + " has already been taken!");
+                        }
+                        i++;
+
                     }
-                    i++;
 
-                }
+                    // Reset the validation of command again
 
-                // Reset the validation of command again
+                    validCommand = true;
+                    invalidTimes = 0;
+                    System.out.println();
 
-                validCommand = true;
-                invalidTimes = 0;
+                } else if (decision.toUpperCase().equals("SOLVE")) {
 
-            } else if (decision.toUpperCase().equals("SOLVE")) {
+                    // Take in the complete guess, and process the outcome
 
-                // Take in the complete guess, and process the outcome
+                    System.out.print("Please type in your solution to the puzzle: ");
+                    String completeGuess = decisionScan.nextLine().trim();
+                    if (checkWholeAnswer(answer, completeGuess)) {
+                        this.winner = this.players.get(i);
+                        System.out.println("OH MY GOD!!! You're the GENIUS!!!");
+                        break;
+                    } else {
+                        System.out.println("Sorry! Your solution is incorrect!");
+                        i++;
+                    }
+                    System.out.println();
 
-                System.out.print("Please type in your solution to the puzzle: ");
-                String completeGuess = decisionScan.nextLine().trim();
-                if (checkWholeAnswer(answer, completeGuess)) {
-                    this.winner = this.players.get(i);
-                    System.out.println("OH MY GOD!!! You're the GENIUS!!!");
-                    break;
+                    // Reset the validation of command again
+
+                    validCommand = true;
+                    invalidTimes = 0;
+
                 } else {
-                    System.out.println("Sorry! Your solution is incorrect!");
-                    i++;
+
+                    // When a command is invalid, keep the spin prize, but re-process the command
+
+                    System.out.println("Invalid command! Try again!");
+                    validCommand = false;
+                    invalidTimes++;
+                    if (invalidTimes == 1) {   // If the user keeps typing wrong command more than once, the prize is still retained
+                        prevDollar = dollar;
+                    }
                 }
-
-                // Reset the validation of command again
-
-                validCommand = true;
-                invalidTimes = 0;
 
             } else {
 
-                // When a command is invalid, keep the spin prize, but re-process the command
-
-                System.out.println("Invalid command! Try again!");
-                validCommand = false;
-                invalidTimes++;
-                if (invalidTimes == 1) {   // If the user keeps typing wrong command more than once, the prize is still retained
-                    prevDollar = dollar;
+                if (validCommand) {
+                    // Make sure that if a previous command of the user is invalid in the time the user lands on a
+                    // prize, then user retypes the command again, not affected by any other spins.
+                    if (prize.equals("Bankrupt")) {
+                        // Player loses everything, and lost the turn
+                        this.players.get(i).resetScore();
+                        i++;
+                    } else if (prize.equals("Lost a Turn")) {
+                        //Player lost the turn
+                        i++;
+                    }
                 }
+
             }
 
             // See if the answer is revealed yet
