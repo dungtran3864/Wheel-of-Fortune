@@ -110,9 +110,10 @@ public class WheelOfFortune {
     }
 
     /**
-     * Complete Wheel of Fortune simulation
+     * Complete Wheel of Fortune simulation. Take an answer from the database (NOTE: right now the database is not yet
+     * developed, so I'm gonna take a random answer as a test)
      */
-    public void gameSimulation() {
+    public void gameSimulation(String answer) {
 
         //  Creating 3 new players by asking them to input
 
@@ -126,10 +127,6 @@ public class WheelOfFortune {
             numberOfName++;
         }
 
-        //  Take an answer from the database (NOTE: right now the database is not yet developed,
-        //  so I'm gonna take a random answer as a test)
-
-        String answer = "GEORGE WASHINGTON";
         String encryptedAnswer = encryptAnswer(answer);
 
         /*
