@@ -132,7 +132,7 @@ public class WheelOfFortune {
      * Complete Wheel of Fortune simulation. Take an answer from the database (NOTE: right now the database is not yet
      * developed, so I'm gonna take a random answer as a test)
      */
-    public void gameSimulation(String answer) {
+    public void gameSimulation(String answer, String question) {
 
         //  Creating 3 new players by asking them to input
 
@@ -176,6 +176,7 @@ public class WheelOfFortune {
             // Introduce the puzzle, the current player playing, and his current prize
 
             if (validCommand) {
+                System.out.println("Topic: " + question);
                 System.out.println("Puzzle: " + encryptedAnswer);
                 System.out.println();
                 System.out.println("It's " + this.players.get(i).showName() + "'s turn");
