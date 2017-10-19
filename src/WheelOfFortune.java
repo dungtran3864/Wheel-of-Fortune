@@ -1,5 +1,6 @@
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Zung on 10/5/17.
@@ -188,6 +189,11 @@ public class WheelOfFortune {
             String prize = this.wheelOfFortune.get(new Random().nextInt(this.wheelOfFortune.size()));
             if (validCommand) {
                 System.out.println("WHEEL OF FORTUNE HAS BEEN SPUN!");
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 System.out.println("You have landed on " + prize);
                 System.out.println();
                 if (prize.equals("Free Play")) {  // Prevent Free Play from lost due to invalid commands in process
@@ -199,7 +205,7 @@ public class WheelOfFortune {
 
                 // Player lands on a prize. Now take in further command, and process it.
 
-                if (!freePlay) {
+                if (!freePlay && validCommand) {
                     String processedPrizeString = prize.replace("$", "");
                     dollar = Integer.parseInt(processedPrizeString);
                 }
@@ -226,8 +232,8 @@ public class WheelOfFortune {
                         System.out.println("CONSONANTS will not cost you any money. For VOWELS, " +
                                 "you can buy one of them for $250, given you have sufficient fund.");
                     } else {
-                        System.out.println("You will not lose your turn if you make an incorrect guess! You" +
-                                "can buy a vowel for FREE, or every correct consonant guess you make grants you" +
+                        System.out.println("You will not lose your turn if you make an incorrect guess! You " +
+                                "can buy a vowel for FREE, or every correct consonant guess you make grants you " +
                                 "$500");
                     }
                     System.out.print("Type in a character you want to guess: ");
@@ -366,6 +372,11 @@ public class WheelOfFortune {
                         //Player lost the turn
                         i++;
                     }
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
@@ -398,6 +409,10 @@ public class WheelOfFortune {
                     winner = player;
                 }
             }
+            for (Player player : this.players) {
+                System.out.println(player.showName() + " has $ " + player.showScore());
+            }
+            System.out.println();
             System.out.println(winner.showName() + " has won the Wheel of Fortune with $" + winner.showScore());
 
         } else {
