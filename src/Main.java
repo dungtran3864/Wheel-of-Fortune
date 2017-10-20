@@ -13,7 +13,7 @@ public class Main {
         try {
 
             // Get a connection to MySQL database
-            Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/wheel_of_fortune",
+            Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/wheel_of_fortune?useSSL=false",
                     "root", "Tandung1998");
 
             // Create a statement
